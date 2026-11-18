@@ -20,6 +20,7 @@ button{width:100%;padding:10px;border:0;border-radius:10px;background:var(--acce
 .grid2>div{min-width:0}
 input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:none;appearance:none;line-height:normal}
 .note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.step{font-size:14px;margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
 .ok{color:var(--ok)} .warn{color:var(--warn)}
 .hidden{display:none !important}
 .ghost{background:transparent !important;color:var(--accent) !important;border:1px solid var(--line)}
@@ -31,7 +32,6 @@ input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:non
 
   <section class="card">
     <h2>1. 내 정보 (이 기기에만 저장)</h2>
-    <p class="note">입력한 정보는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다. 차량번호·사용기간·금액은 영수증에서 자동으로 읽습니다.</p>
     <div class="grid2">
       <div><label for="p_uid">고유번호 (7자리)</label>
       <input id="p_uid" maxlength="7" inputmode="numeric" autocomplete="off"></div>
@@ -53,7 +53,6 @@ input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:non
       <button id="pasteBtn" type="button">스크린샷 붙여넣기</button>
     </div>
     <input type="file" id="file" accept="application/pdf,image/*" hidden>
-    <p class="note">영수증 사진이나 PDF를 올리거나, 캡처한 화면을 붙여넣으세요. 영수증 내용을 읽어 아래 칸을 채웁니다. 파일은 이 기기에서만 읽습니다.</p>
     <p class="note" id="parseMsg"></p>
   </section>
 
@@ -83,8 +82,15 @@ input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:non
       <select id="rank"><option>CAP</option><option>F/O</option></select></div>
     </div>
     <button id="go" type="button">확인 - 구글 폼 열기</button>
-    <p class="note">열린 폼에서 회사 계정 이메일이 자동으로 들어갔는지 확인하고 제출하세요. 영수증 파일은 폼의 '파일 추가'에서 직접 선택해야 합니다 (구글 폼 정책상 자동 첨부 불가).</p>
+    <p class="step">폼이 열리면 <b>① 이메일 체크박스를 누르고 ② '파일 추가'를 눌러 영수증을 직접 선택</b>한 뒤 제출하세요.</p>
     <p class="note" id="goMsg"></p>
+  </section>
+
+  <section class="card">
+    <h2>안내</h2>
+    <p class="note">입력한 정보는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다.</p>
+    <p class="note">차량번호·사용기간·금액은 영수증에서 자동으로 읽습니다. 영수증 사진이나 PDF를 올리거나, 캡처한 화면을 붙여넣으세요. 파일은 이 기기에서만 읽습니다.</p>
+    <p class="note">구글 폼 정책상 영수증 파일은 자동으로 첨부되지 않으니 폼에서 직접 선택해야 합니다.</p>
   </section>
 </div>
 
