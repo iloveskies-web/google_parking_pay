@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>정기권 신청 도우미</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#1d2330;--muted:#6b7280;--accent:#2563eb;--line:#e5e7eb;--ok:#15803d;--warn:#b45309}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111418;--card:#1b2028;--text:#e8ebf0;--muted:#9aa3b2;--accent:#60a5fa;--line:#2b323d;--ok:#4ade80;--warn:#fbbf24}}
+:root[data-theme="dark"]{--bg:#111418;--card:#1b2028;--text:#e8ebf0;--muted:#9aa3b2;--accent:#60a5fa;--line:#2b323d;--ok:#4ade80;--warn:#fbbf24}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,"Malgun Gothic",sans-serif;line-height:1.5}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:8px 0 12px}
+h2{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:16px}
+button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:600;margin-top:12px;cursor:pointer}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.ok{color:var(--ok)} .warn{color:var(--warn)}
+.hidden{display:none !important}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;padding:16px;box-sizing:border-box}
+.sheetBox{width:100%;max-width:520px;background:var(--card);border-radius:14px;padding:12px;box-sizing:border-box}
+.sheetBox button{margin:6px 0}
+.ghost{background:transparent !important;color:var(--accent) !important;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>인천공항 정기권 신청 도우미</h1>
+
+  <div id="sheet" class="sheet hidden">
+    <div class="sheetBox">
+      <button type="button" id="albumBtn">앨범에서 선택</button>
+      <button type="button" id="fromFileBtn">파일에서 선택</button>
+      <button type="button" id="pasteBtn">스크린샷 붙여넣기</button>
+      <button type="button" id="closeSheet" class="ghost">닫기</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>1. 내 정보 (이 기기에만 저장)</h2>
+    <p class="note">입력한 정보는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다. 차량번호·사용기간·금액은 영수증에서 자동으로 읽습니다.</p>
+    <label for="p_uid">고유번호</label>
+    <input id="p_uid" autocomplete="off">
+    <label for="p_name">이름</label>
+    <input id="p_name" autocomplete="off">
+    <label for="p_type">기종</label>
+    <select id="p_type"></select>
+    <label for="p_rank">직급</label>
+    <select id="p_rank"><option>CAP</option><option>F/O</option></select>
+    <button id="saveProfile" type="button">저장</button>
+    <p class="note" id="profileMsg"></p>
+  </section>
+
+  <section class="card">
+    <h2>2. 정기권 영수증 올리기</h2>
+    <button id="pickBtn" type="button">파일 선택</button>
+    <input type="file" id="album" accept="image/*" hidden>
+    <input type="file" id="file" accept="application/pdf,image/*" hidden>
+    <p class="note">앨범, 파일, 또는 방금 캡처한 화면 중에서 고르세요. 영수증 내용을 읽어 아래 칸을 채웁니다. 파일은 이 기기에서만 읽습니다.</p>
+    <p class="note" id="parseMsg"></p>
+  </section>
+
+  <section class="card">
+    <h2>3. 확인 후 신청</h2>
+    <label for="amount">결제금액</label>
+    <select id="amount">
+      <option value="" selected>영수증을 올리면 자동으로 채워집니다</option>
+      <option value="35000">35,000</option>
+      <option value="50000">50,000</option>
+      <option value="80000">80,000</option>
+    </select>
+    <label for="start">사용 시작일</label>
+    <input type="date" id="start">
+    <label for="end">사용 종료일</label>
+    <input type="date" id="end">
+    <label for="car">차량번호</label>
+    <input id="car" autocomplete="off">
+    <label for="uid">고유번호</label>
+    <input id="uid" autocomplete="off">
+    <label for="name">이름</label>
+    <input id="name" autocomplete="off">
+    <label for="type">기종</label>
+    <select id="type"></select>
+    <label for="rank">직급</label>
+    <select id="rank"><option>CAP</option><option>F/O</option></select>
+    <button id="go" type="button">확인 - 구글 폼 열기</button>
+    <p class="note">열린 폼에서 회사 계정 이메일이 자동으로 들어갔는지 확인하고 제출하세요. 영수증 파일은 폼의 '파일 추가'에서 직접 선택해야 합니다 (구글 폼 정책상 자동 첨부 불가).</p>
+    <p class="note" id="goMsg"></p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
+<script>
+(function () {
+  // ===== 설정 =====
+  var FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfS1N4EoZbqkHyXWPvSGg1wVY0iC1kOVwN4Sqpf703DWjCwyA/viewform';
+  var ENTRY = {
+    car: 'entry.1478853087',
+    amount: 'entry.703416312',
+    type: 'entry.1654827730',
+    rank: 'entry.993171279',
+    uid: 'entry.1552792193',
+    name: 'entry.2119296480',
+    start: 'entry.907576270',
+    end: 'entry.1423657251'
+  };
+  var TYPES = ['A220','A321','A330','A350','B737','B747','B777','B787','A380'];
+  var STORE_KEY = 'parkingFormProfile';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fileEl = $('file');
+  var pdfLoaded = false;
+
+  // ===== 기종 옵션 채우기 =====
+  TYPES.forEach(function (t) {
+    ['p_type', 'type'].forEach(function (id) {
+      var o = document.createElement('option'); o.textContent = t; o.value = t; $(id).appendChild(o);
+    });
+  });
+
+  // ===== 저장/불러오기 (localStorage, 실패해도 동작) =====
+  function loadProfile() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveProfile(p) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); return true; } catch (e) { return false; }
+  }
+  function fillProfileInputs(p) {
+    $('p_uid').value = p.uid || '';
+    $('p_name').value = p.name || '';
+    $('p_type').value = p.type || 'A321';
+    $('p_rank').value = p.rank || 'CAP';
+    // 신청 화면 기본값도 내 정보로 채움
+    $('uid').value = p.uid || '';
+    $('name').value = p.name || '';
+    $('type').value = p.type || 'A321';
+    $('rank').value = p.rank || 'CAP';
+  }
+  fillProfileInputs(loadProfile());
+
+  $('saveProfile').addEventListener('click', function () {
+    var p = {
+      uid: $('p_uid').value.trim(),
+      name: $('p_name').value.trim(),
+      type: $('p_type').value,
+      rank: $('p_rank').value
+    };
+    var ok = saveProfile(p);
+    fillProfileInputs(p);
+    $('profileMsg').className = 'note ' + (ok ? 'ok' : 'warn');
+    $('profileMsg').textContent = ok ? '저장되었습니다.' : '이 브라우저에서는 저장할 수 없습니다. 신청 화면에서 직접 입력하세요.';
+  });
+
+  // ===== 영수증 읽기 =====
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function parseReceipt(text) {
+    var out = {};
+    var t = text.replace(/\s+/g, ' ');
+
+    var car = t.match(/차\s*[량랑]\s*번\s*호\s*:?\s*(\d{2,3}\s*[가-힣]\s*\d{4})/);
+    if (car) out.car = car[1].replace(/\s/g, '');
+
+    var per = t.match(/(\d{4})\s*[-.\/]\s*(\d{1,2})\s*[-.\/]\s*(\d{1,2})\s*[~∼～\-–]\s*(\d{4})\s*[-.\/]\s*(\d{1,2})\s*[-.\/]\s*(\d{1,2})/);
+    if (per) {
+      out.start = per[1] + '-' + pad(per[2]) + '-' + pad(per[3]);
+      out.end = per[4] + '-' + pad(per[5]) + '-' + pad(per[6]);
+    }
+
+    var amt = t.match(/결\s*제\s*금\s*액\s*:?\s*([\d,]+)\s*원/) || t.match(/합\s*계\s*금\s*액\s*:?\s*([\d,]+)\s*원/);
+    if (amt) {
+      var n = String(parseInt(amt[1].replace(/,/g, ''), 10));
+      if (['35000', '50000', '80000'].indexOf(n) >= 0) out.amount = n;
+    }
+
+    var name = t.match(/고\s*객\s*명\s*:?\s*([가-힣]{2,5})/);
+    if (name) out.receiptName = name[1];
+
+    return out;
+  }
+
+  async function readPdf(file) {
+    if (!window.pdfjsLib) throw new Error('PDF 읽기 도구를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var data = new Uint8Array(await file.arrayBuffer());
+    var pdf = await pdfjsLib.getDocument({ data: data }).promise;
+    var text = '';
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var page = await pdf.getPage(i);
+      var content = await page.getTextContent();
+      text += content.items.map(function (it) { return it.str; }).join(' ') + '\n';
+    }
+    // 글자 정보가 없는(스캔/이미지) PDF는 페이지를 그려서 OCR로 읽는다
+    if (text.replace(/\s/g, '').length < 20) {
+      if (!window.Tesseract) throw new Error('사진 읽기 도구를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+      var ocrText = '';
+      for (var j = 1; j <= pdf.numPages; j++) {
+        var pg = await pdf.getPage(j);
+        var viewport = pg.getViewport({ scale: 2 });
+        var canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await pg.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+        var r = await Tesseract.recognize(canvas, 'kor+eng');
+        ocrText += r.data.text + '\n';
+      }
+      text = ocrText;
+    }
+    return text;
+  }
+
+  async function readImage(file) {
+    if (!window.Tesseract) throw new Error('사진 읽기 도구를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+    var r = await Tesseract.recognize(file, 'kor+eng');
+    return r.data.text;
+  }
+
+  var currentFile = null;
+  async function processFile(file) {
+    currentFile = file;
+    var msg = $('parseMsg');
+    msg.className = 'note';
+    msg.textContent = '영수증을 읽는 중입니다...';
+    try {
+      var text = /pdf$/i.test(file.name) || file.type === 'application/pdf'
+        ? await readPdf(file)
+        : await readImage(file);
+      var r = parseReceipt(text);
+      var filled = [];
+      if (r.car) { $('car').value = r.car; filled.push('차량번호'); }
+      if (r.start) { $('start').value = r.start; filled.push('시작일'); }
+      if (r.end) { $('end').value = r.end; filled.push('종료일'); }
+      if (r.amount) { $('amount').value = r.amount; filled.push('결제금액'); }
+      if (filled.length === 0) {
+        msg.className = 'note warn';
+        msg.textContent = '영수증에서 내용을 찾지 못했습니다. 아래 칸을 직접 입력하세요.';
+      } else {
+        var warn = '';
+        if (r.receiptName && r.receiptName !== $('name').value.trim()) {
+          warn = ' 단, 영수증 고객명(' + r.receiptName + ')이 내 이름과 다릅니다. 확인하세요.';
+        }
+        msg.className = 'note ' + (warn ? 'warn' : 'ok');
+        msg.textContent = '자동 입력: ' + filled.join(', ') + '.' + warn;
+      }
+    } catch (e) {
+      msg.className = 'note warn';
+      msg.textContent = '읽기 실패: ' + e.message + ' 아래 칸을 직접 입력하세요.';
+    }
+  }
+
+  var albumEl = $('album');
+  var sheet = $('sheet');
+  function openSheet() { sheet.classList.remove('hidden'); }
+  function closeSheet() { sheet.classList.add('hidden'); }
+  $('pickBtn').addEventListener('click', openSheet);
+  $('closeSheet').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', function (e) { if (e.target === sheet) closeSheet(); });
+  $('albumBtn').addEventListener('click', function () { closeSheet(); albumEl.click(); });
+  $('fromFileBtn').addEventListener('click', function () { closeSheet(); fileEl.click(); });
+
+  albumEl.addEventListener('change', function () {
+    if (albumEl.files[0]) processFile(albumEl.files[0]);
+    albumEl.value = '';
+  });
+  fileEl.addEventListener('change', function () {
+    if (fileEl.files[0]) processFile(fileEl.files[0]);
+    fileEl.value = '';
+  });
+
+  // 캡처 화면 붙여넣기: Ctrl+V(PC) 또는 버튼(휴대폰)
+  document.addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image/') === 0) {
+        var f = items[i].getAsFile();
+        if (f) {
+          e.preventDefault();
+          processFile(new File([f], '붙여넣은 영수증.png', { type: f.type }));
+        }
+        return;
+      }
+    }
+  });
+
+  $('pasteBtn').addEventListener('click', async function () {
+    closeSheet();
+    try {
+      var items = await navigator.clipboard.read();
+      for (var i = 0; i < items.length; i++) {
+        var type = items[i].types.filter(function (t) { return t.indexOf('image/') === 0; })[0];
+        if (type) {
+          var blob = await items[i].getType(type);
+          processFile(new File([blob], '붙여넣은 영수증.png', { type: blob.type }));
+          return;
+        }
+      }
+      $('parseMsg').className = 'note warn';
+      $('parseMsg').textContent = '클립보드에 사진이 없습니다. 화면을 캡처한 뒤 다시 눌러 주세요.';
+    } catch (err) {
+      $('parseMsg').className = 'note warn';
+      $('parseMsg').textContent = '붙여넣기를 할 수 없습니다. 위의 파일 선택으로 올려 주세요.';
+    }
+  });
+
+  // ===== 구글 폼 열기 (미리 채운 링크) =====
+  $('go').addEventListener('click', function () {
+    var v = {
+      car: $('car').value.trim(),
+      amount: $('amount').value,
+      start: $('start').value,
+      end: $('end').value,
+      uid: $('uid').value.trim(),
+      name: $('name').value.trim(),
+      type: $('type').value,
+      rank: $('rank').value
+    };
+    var missing = [];
+    if (!v.car) missing.push('차량번호 (영수증에서 읽지 못함)');
+    if (!v.uid) missing.push('고유번호');
+    if (!v.name) missing.push('이름');
+    if (!v.amount) missing.push('결제금액');
+    if (!v.start) missing.push('사용 시작일');
+    if (!v.end) missing.push('사용 종료일');
+    if (missing.length) {
+      $('goMsg').className = 'note warn';
+      $('goMsg').textContent = '입력이 필요합니다: ' + missing.join(', ');
+      return;
+    }
+
+    var s = v.start.split('-'), e = v.end.split('-');
+    var params = new URLSearchParams();
+    params.append('usp', 'pp_url');
+    params.append(ENTRY.car, v.car);
+    params.append(ENTRY.amount, Number(v.amount).toLocaleString('en-US'));
+    params.append(ENTRY.type, v.type);
+    params.append(ENTRY.rank, v.rank);
+    params.append(ENTRY.uid, v.uid);
+    params.append(ENTRY.name, v.name);
+    params.append(ENTRY.start + '_year', s[0]);
+    params.append(ENTRY.start + '_month', String(Number(s[1])));
+    params.append(ENTRY.start + '_day', String(Number(s[2])));
+    params.append(ENTRY.end + '_year', e[0]);
+    params.append(ENTRY.end + '_month', String(Number(e[1])));
+    params.append(ENTRY.end + '_day', String(Number(e[2])));
+
+    var fileName = currentFile ? currentFile.name : '(영수증 파일 없음)';
+    window.open(FORM_URL + '?' + params.toString(), '_blank', 'noopener');
+    $('goMsg').className = 'note ok';
+    $('goMsg').innerHTML = '';
+    $('goMsg').textContent = '새 탭에서 폼이 열렸습니다. 이메일·내용을 확인하고 "파일 추가"에서 영수증(' + fileName + ')을 선택한 뒤 제출하세요.';
+  });
+})();
+</script>
+</body>
+</html>
