@@ -82,6 +82,7 @@ input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:non
       <select id="rank"><option>CAP</option><option>F/O</option></select></div>
     </div>
     <button id="go" type="button">확인 - 구글 폼 열기</button>
+    <button id="calBtn" type="button" class="ghost">종료일 캘린더에 추가</button>
     <p class="step">폼이 열리면 <b>① 이메일 체크박스를 누르고 ② '파일 추가'를 눌러 영수증을 직접 선택</b>한 뒤 제출하세요.</p>
     <p class="note" id="goMsg"></p>
   </section>
@@ -292,6 +293,44 @@ input[type=date]{min-width:0;max-width:100%;display:block;-webkit-appearance:non
       $('parseMsg').className = 'note warn';
       $('parseMsg').textContent = '붙여넣기를 할 수 없습니다. "영수증 업로드" 버튼으로 올려 주세요.';
     }
+  });
+
+  // ===== 캘린더 일정 파일(.ics) 만들기: 종료일 하루 전 알림 =====
+  $('calBtn').addEventListener('click', function () {
+    var end = $('end').value;
+    if (!end) {
+      $('goMsg').className = 'note warn';
+      $('goMsg').textContent = '사용 종료일을 먼저 입력하세요.';
+      return;
+    }
+    var d = end.replace(/-/g, '');
+    var next = new Date(end + 'T00:00:00');
+    next.setDate(next.getDate() + 1);
+    var nd = next.getFullYear() + pad(next.getMonth() + 1) + pad(next.getDate());
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    var ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//parking-form//KO', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      'UID:parking-pass-' + d + '@parking-form',
+      'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + d,
+      'DTEND;VALUE=DATE:' + nd,
+      'SUMMARY:인천공항 정기권 종료',
+      'DESCRIPTION:차량번호 ' + ($('car').value || '-') + ' / 정기권 사용 종료일',
+      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:정기권 종료 하루 전', 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'parking-pass-end.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    $('goMsg').className = 'note ok';
+    $('goMsg').textContent = '캘린더 파일을 만들었습니다. 열리는 창에서 "캘린더에 추가"를 누르세요.';
   });
 
   // ===== 구글 폼 열기 (미리 채운 링크) =====
