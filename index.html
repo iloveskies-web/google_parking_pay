@@ -13,9 +13,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,"Malg
 h1{font-size:20px;margin:8px 0 12px}
 h2{font-size:16px;margin:0 0 10px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-input,select{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:16px}
-button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:600;margin-top:12px;cursor:pointer}
+label{display:block;font-size:12px;color:var(--muted);margin:6px 0 2px}
+input,select{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:15px;height:36px}
+button{width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;margin-top:8px;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.grid2>div{min-width:0}
 .note{font-size:13px;color:var(--muted);margin:6px 0 0}
 .ok{color:var(--ok)} .warn{color:var(--warn)}
 .hidden{display:none !important}
@@ -41,14 +43,16 @@ button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--acce
   <section class="card">
     <h2>1. 내 정보 (이 기기에만 저장)</h2>
     <p class="note">입력한 정보는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다. 차량번호·사용기간·금액은 영수증에서 자동으로 읽습니다.</p>
-    <label for="p_uid">고유번호</label>
-    <input id="p_uid" autocomplete="off">
-    <label for="p_name">이름</label>
-    <input id="p_name" autocomplete="off">
-    <label for="p_type">기종</label>
-    <select id="p_type"></select>
-    <label for="p_rank">직급</label>
-    <select id="p_rank"><option>CAP</option><option>F/O</option></select>
+    <div class="grid2">
+      <div><label for="p_uid">고유번호 (7자리)</label>
+      <input id="p_uid" maxlength="7" inputmode="numeric" autocomplete="off"></div>
+      <div><label for="p_name">이름</label>
+      <input id="p_name" autocomplete="off"></div>
+      <div><label for="p_type">기종</label>
+      <select id="p_type"></select></div>
+      <div><label for="p_rank">직급</label>
+      <select id="p_rank"><option>CAP</option><option>F/O</option></select></div>
+    </div>
     <button id="saveProfile" type="button">저장</button>
     <p class="note" id="profileMsg"></p>
   </section>
@@ -64,27 +68,29 @@ button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--acce
 
   <section class="card">
     <h2>3. 확인 후 신청</h2>
-    <label for="amount">결제금액</label>
-    <select id="amount">
-      <option value="" selected>영수증을 올리면 자동으로 채워집니다</option>
-      <option value="35000">35,000</option>
-      <option value="50000">50,000</option>
-      <option value="80000">80,000</option>
-    </select>
-    <label for="start">사용 시작일</label>
-    <input type="date" id="start">
-    <label for="end">사용 종료일</label>
-    <input type="date" id="end">
-    <label for="car">차량번호</label>
-    <input id="car" autocomplete="off">
-    <label for="uid">고유번호</label>
-    <input id="uid" autocomplete="off">
-    <label for="name">이름</label>
-    <input id="name" autocomplete="off">
-    <label for="type">기종</label>
-    <select id="type"></select>
-    <label for="rank">직급</label>
-    <select id="rank"><option>CAP</option><option>F/O</option></select>
+    <div class="grid2">
+      <div><label for="amount">결제금액</label>
+      <select id="amount">
+        <option value="" selected>자동 입력</option>
+        <option value="35000">35,000</option>
+        <option value="50000">50,000</option>
+        <option value="80000">80,000</option>
+      </select></div>
+      <div><label for="car">차량번호</label>
+      <input id="car" autocomplete="off"></div>
+      <div><label for="start">사용 시작일</label>
+      <input type="date" id="start"></div>
+      <div><label for="end">사용 종료일</label>
+      <input type="date" id="end"></div>
+      <div><label for="uid">고유번호 (7자리)</label>
+      <input id="uid" maxlength="7" inputmode="numeric" autocomplete="off"></div>
+      <div><label for="name">이름</label>
+      <input id="name" autocomplete="off"></div>
+      <div><label for="type">기종</label>
+      <select id="type"></select></div>
+      <div><label for="rank">직급</label>
+      <select id="rank"><option>CAP</option><option>F/O</option></select></div>
+    </div>
     <button id="go" type="button">확인 - 구글 폼 열기</button>
     <p class="note">열린 폼에서 회사 계정 이메일이 자동으로 들어갔는지 확인하고 제출하세요. 영수증 파일은 폼의 '파일 추가'에서 직접 선택해야 합니다 (구글 폼 정책상 자동 첨부 불가).</p>
     <p class="note" id="goMsg"></p>
@@ -319,7 +325,7 @@ button{width:100%;padding:12px;border:0;border-radius:10px;background:var(--acce
     };
     var missing = [];
     if (!v.car) missing.push('차량번호 (영수증에서 읽지 못함)');
-    if (!v.uid) missing.push('고유번호');
+    if (!/^\d{7}$/.test(v.uid)) missing.push('고유번호 7자리 숫자');
     if (!v.name) missing.push('이름');
     if (!v.amount) missing.push('결제금액');
     if (!v.start) missing.push('사용 시작일');
